@@ -1,0 +1,62 @@
+Picior Catalin 322CB
+
+ast.asm contains 2 functons( iocla_atoi and create_tree) that are used to
+evaluate a prefix expression string like "+ + * 5 3 2 * 2 3".
+
+iocla_atoi converts a string that contains digit characters and '-' into a
+positive or negative 32 bits integer and store the result into the eax
+register.
+
+Firstly, the used registers are pushed on stack to preserve their previous
+values, and then the function's stack frame is initialized. The argument is
+stored in the esi register and edx contains 10, to be used in multiplication.
+
+The global variable is_negative acts as a flag which is intialized with 0
+(suppose that every string is positive). check_if_negative label checks if the
+first char of the string(stored in al register) is '-' and sets the flag to 1 
+and put the next char(first digit of a negative number) in the al register; 
+after the label ends, al register contains the first digit string for a signed
+number  and in label char_to_int value of '0' is substracted from al to obtain
+a digit from its ASCII code.
+
+parse_string label stores the remaining bytes in the bl register until '\0' is
+encountered then eax is multiplied by 10(stored in edx) and incremented with the
+value in the bl register(suppose the string is "32": eax -> 3; mul edx => eax
+-> 30; add eax, ebx; eax -> 32). After all the chars are parsed, the program
+checks if the flag variable is set or not and if the number is negative, the
+value in eax register(which was moved to ebx) is substracted from 0 and restored
+in eax register(equivalent to -eax = 0 - eax). Before the end all used registers
+are  restored to their previous values.
+
+create_tree parses the prefix expression string into tokens(operands and
+operators) and then creates a node for each token and links them in a binary
+tree by the following rules: operands are leaves; operators are either the
+root or interior nodes; the children of the parent node are linked always from
+left to right.
+
+Firstly, the used registers are pushed on stack to preserve their previous
+values, and then the function's stack frame is initialized. At the beginning,
+the strtok is called then we use strdup to copy the token on heap and use malloc
+to init the root node: root -> value = token_copy; root ->left = null; root -> 
+right = null). Push the root node on the stack and save it in root variable.
+
+For the rest of the string, strtok is called to obtain tokens and the program
+initialises its node like the root node then checks if the token is an operator
+or an operand.
+
+Two checks are needed for a token to be identified as an operator: check if the
+first byte of the token has a value smaller than '/', the biggest operator, else
+the token is an operand and also check if the next char of the token is '\0', so
+that "-49" is a negative operand, not an operator! After the check_operator_1 & 2
+labels the execution jumps to the operand or operator label accordingly.
+
+If the token is an operator, the parent node is popped from stack and the child is
+linked to the left if parent -> left == null(then push the parent node and the current
+node on the stack), else it is linked to the right(push back just the current node).
+
+If the token is an operand, the parent node is popped from stack and the child is
+linked to the left if parent -> left == null(then push the parent node on the stack),
+else it is linked to the right(do not push back any node on stack).
+
+After the tree is completely created and linked, we move the content of the root
+on the eax register and pop back all the previous values of the used registers.
